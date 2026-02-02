@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>27岁的秘密 | SDW & DLN</title>
+    <!-- 引入外部字体提升质感 -->
+    <link href="https://fonts.googleapis.com" rel="stylesheet" />
+    <style>
+      :root {
+        --primary-pink: #ffafbd;
+        --secondary-blue: #a6c1ee;
+        --text-gold: #d4af37;
+      }
+
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+        background: #0a0a0a; /* 深邃黑 */
+        font-family: "Noto Serif SC", serif;
+        color: white;
+      }
+
+      /* 背景星空动效 */
+      #stars-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        background: radial-gradient(
+          ellipse at bottom,
+          #1b2735 0%,
+          #090a0f 100%
+        );
+      }
+
+      .container {
+        position: relative;
+        z-index: 10;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        cursor: pointer;
+      }
+
+      /* 核心数字动画 */
+      .big-number {
+        font-size: 8rem;
+        font-weight: 700;
+        background: linear-gradient(
+          to right,
+          var(--primary-pink),
+          var(--secondary-blue)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+        filter: drop-shadow(0 0 15px rgba(255, 175, 189, 0.5));
+      }
+
+      .formula {
+        opacity: 0;
+        font-size: 2.5rem;
+        margin-top: -2rem;
+        transition: all 1s ease;
+        letter-spacing: 5px;
+      }
+
+      /* 文案展示 */
+      .message-box {
+        margin-top: 30px;
+        max-width: 80%;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 1.5s ease 0.5s;
+      }
+
+      .message-box p {
+        font-size: 1.2rem;
+        line-height: 2;
+        color: #ddd;
+      }
+
+      .names {
+        font-family: "Pacifico", cursive;
+        font-size: 1.5rem;
+        color: var(--text-gold);
+        margin-top: 20px;
+      }
+
+      /* 点击交互后的状态 */
+      .active .big-number {
+        transform: scale(0.8) translateY(-20px);
+        letter-spacing: 20px;
+      }
+
+      .active .formula {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .active .message-box {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* 底部提示 */
+      .hint {
+        position: absolute;
+        bottom: 30px;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.4);
+        animation: breathe 2s infinite;
+      }
+
+      @keyframes breathe {
+        0%,
+        100% {
+          opacity: 0.3;
+        }
+        50% {
+          opacity: 0.8;
+        }
+      }
+    </style>
+  </head>
+  <body onclick="activate()">
+    <div id="stars-container"></div>
+
+    <div class="container" id="main-content">
+      <div class="big-number" id="num">27</div>
+      <div class="formula">13 + 14</div>
+
+      <div class="message-box">
+        <p>很多人说，27 只是一个平凡的数字</p>
+        <p>但在我眼里，它是命中注定的浪漫</p>
+        <p>
+          <strong>13</strong> 是过去岁月里，遇见你的<strong>一生</strong>幸运
+        </p>
+        <p>
+          <strong>14</strong> 是余生漫漫中，陪你走过的<strong>一世</strong>坚定
+        </p>
+        <div class="names">SDW ❤️ DLN</div>
+      </div>
+
+      <div class="hint">点击屏幕，拆解 27 岁的秘密</div>
+    </div>
+
+    <!-- 简单的星空背景逻辑 -->
+    <script>
+      function createStars() {
+        const container = document.getElementById("stars-container");
+        for (let i = 0; i < 150; i++) {
+          const star = document.createElement("div");
+          star.style.position = "absolute";
+          star.style.left = Math.random() * 100 + "%";
+          star.style.top = Math.random() * 100 + "%";
+          star.style.width = Math.random() * 3 + "px";
+          star.style.height = star.style.width;
+          star.style.background = "white";
+          star.style.borderRadius = "50%";
+          star.style.opacity = Math.random();
+          star.style.boxShadow = `0 0 ${Math.random() * 10}px white`;
+          container.appendChild(star);
+        }
+      }
+
+      function activate() {
+        document.getElementById("main-content").classList.toggle("active");
+        const num = document.getElementById("num");
+        if (
+          document.getElementById("main-content").classList.contains("active")
+        ) {
+          num.innerText = "27";
+          // 这里可以添加播放音乐的逻辑
+        }
+      }
+
+      createStars();
+    </script>
+  </body>
+</html>
