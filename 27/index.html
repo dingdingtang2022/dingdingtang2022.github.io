@@ -572,9 +572,83 @@
         font-size: 20px;
         color: #fff;
       }
+
+      /* 微信浏览器适配提示 */
+      .wechat-tip {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: #ffeb3b;
+        color: #333;
+        padding: 10px;
+        text-align: center;
+        font-size: 14px;
+        z-index: 1000;
+        display: none;
+      }
+
+      .tip-close {
+        float: right;
+        margin-right: 10px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      /* 自定义弹窗样式 */
+      .custom-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+
+      .custom-modal-content {
+        background-color: #fff;
+        margin: 15% auto;
+        padding: 20px;
+        border-radius: 10px;
+        width: 80%;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      }
+
+      .modal-button {
+        background: linear-gradient(135deg, #ff6b6b, #4d96ff);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 20px;
+        cursor: pointer;
+        margin-top: 15px;
+        font-size: 16px;
+      }
     </style>
   </head>
   <body>
+    <!-- 微信浏览器提示 -->
+    <div class="wechat-tip" id="wechatTip">
+      <span
+        class="tip-close"
+        onclick="document.getElementById('wechatTip').style.display='none'"
+        >×</span
+      >
+      🎵 点击页面任意位置启用背景音乐播放
+    </div>
+
+    <!-- 自定义弹窗 -->
+    <div class="custom-modal" id="customModal">
+      <div class="custom-modal-content">
+        <p id="modalMessage"></p>
+        <button class="modal-button" onclick="closeCustomModal()">确定</button>
+      </div>
+    </div>
+
     <!-- 粒子背景 -->
     <div id="particles-js"></div>
 
@@ -691,8 +765,39 @@
     <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
 
     <script>
+      // 检测微信浏览器
+      function isWechatBrowser() {
+        const ua = navigator.userAgent.toLowerCase();
+        return ua.includes("micromessenger");
+      }
+
+      // 自定义弹窗函数（替代alert）
+      function showCustomModal(message) {
+        document.getElementById("modalMessage").innerHTML = message.replace(
+          /\n/g,
+          "<br>"
+        );
+        document.getElementById("customModal").style.display = "block";
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeCustomModal() {
+        document.getElementById("customModal").style.display = "none";
+        document.body.style.overflow = "auto";
+      }
+
       // 初始化粒子背景
       document.addEventListener("DOMContentLoaded", function () {
+        // 微信浏览器特殊处理
+        if (isWechatBrowser()) {
+          document.getElementById("wechatTip").style.display = "block";
+
+          // 微信环境下延迟播放提示
+          setTimeout(() => {
+            document.getElementById("wechatTip").style.display = "none";
+          }, 5000);
+        }
+
         particlesJS("particles-js", {
           particles: {
             number: { value: 60, density: { enable: true, value_area: 800 } },
@@ -723,45 +828,37 @@
         const musicControl = document.getElementById("musicControl");
         const musicIcon = document.getElementById("musicIcon");
 
-        // 尝试自动播放音乐
+        // 微信浏览器的播放策略
         function playMusic() {
-          bgMusic
-            .play()
-            .then(() => {
-              musicControl.classList.add("playing");
-              musicIcon.className = "fas fa-pause music-icon";
-            })
-            .catch((error) => {
-              console.log("自动播放被阻止:", error);
-              // 如果自动播放失败，显示提示让用户手动点击
-              showPlayPrompt();
-            });
-        }
-
-        // 显示播放提示
-        function showPlayPrompt() {
-          const prompt = document.createElement("div");
-          prompt.style.cssText = `
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255, 107, 107, 0.9);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 20px;
-            z-index: 1000;
-            font-size: 14px;
-            backdrop-filter: blur(10px);
-          `;
-          prompt.innerHTML = "🎵 点击右下角音乐图标播放背景音乐";
-          document.body.appendChild(prompt);
-
-          setTimeout(() => {
-            prompt.style.opacity = "0";
-            prompt.style.transition = "opacity 0.5s";
-            setTimeout(() => document.body.removeChild(prompt), 500);
-          }, 3000);
+          if (isWechatBrowser()) {
+            // 微信环境下需要用户交互
+            document.body.addEventListener(
+              "touchstart",
+              function firstTouch() {
+                bgMusic
+                  .play()
+                  .then(() => {
+                    musicControl.classList.add("playing");
+                    musicIcon.className = "fas fa-pause music-icon";
+                  })
+                  .catch((e) => console.log("播放失败:", e));
+                document.body.removeEventListener("touchstart", firstTouch);
+              },
+              { once: true }
+            );
+          } else {
+            // 非微信浏览器尝试自动播放
+            bgMusic
+              .play()
+              .then(() => {
+                musicControl.classList.add("playing");
+                musicIcon.className = "fas fa-pause music-icon";
+              })
+              .catch((error) => {
+                console.log("自动播放被阻止:", error);
+                showCustomModal("🎵 点击右下角音乐图标播放背景音乐");
+              });
+          }
         }
 
         // 音乐控制点击事件
@@ -778,7 +875,7 @@
         });
 
         // 页面加载完成后尝试播放音乐
-        setTimeout(playMusic, 1000);
+        setTimeout(playMusic, 1500);
 
         // 图片数据
         const images13 = Array.from({ length: 13 }, (_, i) => ({
@@ -803,7 +900,7 @@
           const card = document.createElement("div");
           card.className = "image-card";
           card.innerHTML = `
-            <img class="thumbnail-img" src="${image.src}" alt="${image.title}">
+            <img class="thumbnail-img" src="${image.src}" alt="${image.title}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+44CCPC90ZXh0Pjwvc3ZnPg=='">
             <div class="image-number">${image.number}</div>
           `;
 
@@ -820,7 +917,7 @@
           const card = document.createElement("div");
           card.className = "image-card";
           card.innerHTML = `
-            <img class="thumbnail-img" src="${image.src}" alt="${image.title}">
+            <img class="thumbnail-img" src="${image.src}" alt="${image.title}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQwIiBoZWlnaHQ9IjEyMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+44CCPC90ZXh0Pjwvc3ZnPg=='">
             <div class="image-number">${image.number}</div>
           `;
 
@@ -831,7 +928,7 @@
           container14.appendChild(card);
         });
 
-        // 打开模态框
+        // 打开模态框（使用自定义弹窗）
         function openModal(images, index) {
           currentImages = images;
           currentIndex = index;
@@ -902,7 +999,7 @@
           }
         });
 
-        // 添加主公式区域的交互效果
+        // 添加主公式区域的交互效果（使用自定义弹窗）
         const numberBoxes = document.querySelectorAll(".number-box");
         numberBoxes.forEach((box) => {
           box.addEventListener("click", function () {
@@ -911,21 +1008,99 @@
 
             let message = "";
             if (num === "13") {
-              message = "13 → 一生\n\n一生太短，只够爱你一人";
+              message = "13 → 一生<br><br>一生太短，只够爱你一人";
             } else if (num === "14") {
-              message = "14 → 一世\n\n一世太长，幸好有你相伴";
+              message = "14 → 一世<br><br>一世太长，幸好有你相伴";
             } else if (num === "27") {
-              message = "27 → 你的年华\n\n27岁，是我们爱情方程式里最美的解";
+              message = "27 → 你的年华<br><br>27岁，是我们爱情方程式里最美的解";
             } else if (num === "爱") {
               message =
-                "爱 → 永恒\n\n爱是13 + 14 = 27的终极答案，是我们一生的命题";
+                "爱 → 永恒<br><br>爱是13+14=27的终极答案，是我们一生的命题";
             }
 
             if (message) {
-              alert(message);
+              showCustomModal(message);
             }
           });
         });
+
+        // 卡片点击事件（使用自定义弹窗）
+        // 生成记忆卡片
+        const memoryContainer = document.getElementById("memory-cards");
+        if (memoryContainer) {
+          const memories = [
+            "初见时的微笑",
+            "第一次牵手的心跳",
+            "雨中漫步的浪漫",
+            "深夜长谈的默契",
+            "共同旅行回忆",
+            "你专注的样子",
+            "庆祝的小惊喜",
+            "互相鼓励的时刻",
+            "彼此了解的瞬间",
+            "温柔体贴的细节",
+            "克服困难的坚持",
+            "成长路上的陪伴",
+            "爱你的每一天",
+          ];
+
+          memories.forEach((memory, index) => {
+            const card = document.createElement("div");
+            card.className = "card memory-card";
+            card.innerHTML = `
+              <div class="card-number">${index + 1}</div>
+              <div class="card-text">${memory}</div>
+            `;
+            memoryContainer.appendChild(card);
+
+            card.addEventListener("click", () => {
+              showCustomModal(
+                `记忆 ${
+                  index + 1
+                }: ${memory}<br><br>这是我们一起创造的珍贵回忆，永远珍藏在我心中。`
+              );
+            });
+          });
+        }
+
+        // 生成承诺卡片
+        const promiseContainer = document.getElementById("promise-cards");
+        if (promiseContainer) {
+          const promises = [
+            "每天说爱你",
+            "支持你的梦想",
+            "记住重要日子",
+            "共同面对挑战",
+            "尊重你的选择",
+            "保持沟通透明",
+            "创造美好回忆",
+            "一起学习成长",
+            "保持浪漫仪式",
+            "健康生活相伴",
+            "珍惜相处时光",
+            "包容理解彼此",
+            "规划共同未来",
+            "爱你一生一世",
+          ];
+
+          promises.forEach((promise, index) => {
+            const card = document.createElement("div");
+            card.className = "card promise-card";
+            card.innerHTML = `
+              <div class="card-number">${index + 1}</div>
+              <div class="card-text">${promise}</div>
+            `;
+            promiseContainer.appendChild(card);
+
+            card.addEventListener("click", () => {
+              showCustomModal(
+                `承诺 ${
+                  index + 1
+                }: ${promise}<br><br>这是我真诚的承诺，用一生一世来履行。`
+              );
+            });
+          });
+        }
 
         // 添加页面加载动画
         setTimeout(() => {
