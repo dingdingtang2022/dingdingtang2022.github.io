@@ -528,11 +528,66 @@
       .next-btn {
         right: 20px;
       }
+
+      /* 音乐控制按钮样式 */
+      .music-control {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 100;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .music-control:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.1);
+      }
+
+      .music-control.playing {
+        animation: rotate 3s linear infinite;
+        background: rgba(255, 107, 107, 0.2);
+        border-color: #ff6b6b;
+      }
+
+      @keyframes rotate {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .music-icon {
+        font-size: 20px;
+        color: #fff;
+      }
     </style>
   </head>
   <body>
     <!-- 粒子背景 -->
     <div id="particles-js"></div>
+
+    <!-- 背景音乐 -->
+    <audio id="bgMusic" loop>
+      <source src="music/1.生日快乐-SNH48.mp3" type="audio/mpeg" />
+      您的浏览器不支持音频播放。
+    </audio>
+
+    <!-- 音乐控制按钮 -->
+    <div class="music-control" id="musicControl">
+      <i class="fas fa-music music-icon" id="musicIcon"></i>
+    </div>
 
     <div class="container">
       <header>
@@ -662,6 +717,68 @@
             },
           },
         });
+
+        // 背景音乐控制
+        const bgMusic = document.getElementById("bgMusic");
+        const musicControl = document.getElementById("musicControl");
+        const musicIcon = document.getElementById("musicIcon");
+
+        // 尝试自动播放音乐
+        function playMusic() {
+          bgMusic
+            .play()
+            .then(() => {
+              musicControl.classList.add("playing");
+              musicIcon.className = "fas fa-pause music-icon";
+            })
+            .catch((error) => {
+              console.log("自动播放被阻止:", error);
+              // 如果自动播放失败，显示提示让用户手动点击
+              showPlayPrompt();
+            });
+        }
+
+        // 显示播放提示
+        function showPlayPrompt() {
+          const prompt = document.createElement("div");
+          prompt.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 107, 107, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            z-index: 1000;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+          `;
+          prompt.innerHTML = "🎵 点击右下角音乐图标播放背景音乐";
+          document.body.appendChild(prompt);
+
+          setTimeout(() => {
+            prompt.style.opacity = "0";
+            prompt.style.transition = "opacity 0.5s";
+            setTimeout(() => document.body.removeChild(prompt), 500);
+          }, 3000);
+        }
+
+        // 音乐控制点击事件
+        musicControl.addEventListener("click", function () {
+          if (bgMusic.paused) {
+            bgMusic.play();
+            musicControl.classList.add("playing");
+            musicIcon.className = "fas fa-pause music-icon";
+          } else {
+            bgMusic.pause();
+            musicControl.classList.remove("playing");
+            musicIcon.className = "fas fa-play music-icon";
+          }
+        });
+
+        // 页面加载完成后尝试播放音乐
+        setTimeout(playMusic, 1000);
 
         // 图片数据
         const images13 = Array.from({ length: 13 }, (_, i) => ({
