@@ -781,17 +781,51 @@
       // 页面加载完成后尝试播放音乐
       setTimeout(playMusic, 1000);
 
-      // 图片数据
+      // 图片标题配置列表 - 您可以在这里自定义每张图片的标题
+      const imageTitles13 = [
+        "甘孜",     // 第1张图片
+        "520",     // 第2张图片
+        "毕业",     // 第3张图片
+        "橘子洲",     // 第4张图片
+        "大梅沙",     // 第5张图片
+        "做菜",     // 第6张图片
+        "武汉·长江大桥",     // 第7张图片
+        "运动·小摊",     // 第8张图片
+        "野生动物园",     // 第9张图片
+        "元旦·烧烤",     // 第10张图片
+        "香港",     // 第11张图片
+        "学习·考公",     // 第12张图片
+        "演唱会"      // 第13张图片
+      ];
+
+      const imageTitles14 = [
+        "广州塔",     // 第1张图片
+        "橘子洲",     // 第2张图片
+        "大梅沙",     // 第3张图片
+        "深圳湾",     // 第4张图片
+        "前海石",     // 第5张图片
+        "桔钓沙",     // 第6张图片
+        "世界之窗",     // 第7张图片
+        "南昌·八一广场",     // 第8张图片
+        "景德镇",     // 第9张图片
+        "九江",     // 第10张图片
+        "武汉",     // 第11张图片
+        "滑雪",     // 第12张图片
+        "平安金融中心",     // 第13张图片
+        "香港"      // 第14张图片
+      ];
+
+      // 图片数据 - 使用配置的标题
       const images13 = Array.from({ length: 13 }, (_, i) => ({
         src: `images/13/${String(i + 1).padStart(2, "0")}.webp`,
         number: i + 1,
-        title: `珍贵瞬间 ${i + 1}`,
+        title: imageTitles13[i] || `珍贵瞬间 ${i + 1}`, // 如果配置标题不存在则使用默认标题
       }));
 
       const images14 = Array.from({ length: 14 }, (_, i) => ({
         src: `images/14/${String(i + 1).padStart(2, "0")}.webp`,
         number: i + 1,
-        title: `美好时刻 ${i + 1}`,
+        title: imageTitles14[i] || `美好时刻 ${i + 1}`, // 如果配置标题不存在则使用默认标题
       }));
 
       // 当前模态框状态
@@ -805,7 +839,7 @@
         card.className = "image-card";
         card.innerHTML = `
             <img class="thumbnail-img" src="${image.src}" alt="${image.title}">
-            <div class="image-number">${image.number}</div>
+            <div class="image-number">${image.number}.${image.title}</div>
           `;
 
         card.addEventListener("click", () => {
@@ -822,7 +856,7 @@
         card.className = "image-card";
         card.innerHTML = `
             <img class="thumbnail-img" src="${image.src}" alt="${image.title}">
-            <div class="image-number">${image.number}</div>
+            <div class="image-number">${image.number}.${image.title}</div>
           `;
 
         card.addEventListener("click", () => {
